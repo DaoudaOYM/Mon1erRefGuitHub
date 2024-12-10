@@ -1,0 +1,565 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © JohnMuchow
+
+// CODE REUSE: 
+// You are welcome to reuse this code as long as it is used in open-source indicators published 
+// only on TradingView and a link to this indicator is included.
+//
+// You CANNOT use this code if published, in full or part, in Protected or Invite-only TradingView indicators.
+//
+// Release: v5
+
+//@version=5
+indicator('Des moyennes mobiles multi-Timeframes par Daouda', shorttitle='MAs + VP', overlay=true)
+
+//***************************************************************************************
+// Inputs 
+//***************************************************************************************
+
+iWidth = input.int(title='Line Width', defval=1, minval=1, maxval=4)
+
+//---------------------------------------------------
+// Intraday 
+//---------------------------------------------------
+iIntraMA1Visible = input.bool(title='', defval=true, inline='I1', group='Intraday Moving Averages')
+iIntraMA1Length = input.int(title='', minval=1, maxval=5000, defval=5, inline='I1', group='Intraday Moving Averages')
+iIntraMA1Type = input.string(title='', options=['SMA', 'EMA', 'RMA', 'VWMA', 'WMA'], defval='SMA', inline='I1', group='Intraday Moving Averages')
+iIntraMA1Source = input.source(title='', defval=close, inline='I1', group='Intraday Moving Averages')
+iIntraMA1Color = input.color(title='', defval=color.aqua, inline='I1', group='Intraday Moving Averages')
+
+iIntraMA2Visible = input.bool(title='', defval=true, inline='I2', group='Intraday Moving Averages')
+iIntraMA2Length = input.int(title='', minval=1, maxval=5000, defval=8, inline='I2', group='Intraday Moving Averages')
+iIntraMA2Type = input.string(title='', options=['SMA', 'EMA', 'RMA', 'VWMA', 'WMA'], defval='SMA', inline='I2', group='Intraday Moving Averages')
+iIntraMA2Source = input.source(title='', defval=close, inline='I2', group='Intraday Moving Averages')
+iIntraMA2Color = input.color(title='', defval=#4F8B45, inline='I2', group='Intraday Moving Averages')
+
+iIntraMA3Visible = input.bool(title='', defval=true, inline='I3', group='Intraday Moving Averages')
+iIntraMA3Length = input.int(title='', minval=1, maxval=5000, defval=13, inline='I3', group='Intraday Moving Averages')
+iIntraMA3Type = input.string(title='', options=['SMA', 'EMA', 'RMA', 'VWMA', 'WMA'], defval='SMA', inline='I3', group='Intraday Moving Averages')
+iIntraMA3Source = input.source(title='', defval=close, inline='I3', group='Intraday Moving Averages')
+iIntraMA3Color = input.color(title='', defval=#C23E38, inline='I3', group='Intraday Moving Averages')
+
+iIntraMA4Visible = input.bool(title='', defval=false, inline='I4', group='Intraday Moving Averages')
+iIntraMA4Length = input.int(title='', minval=1, maxval=5000, defval=20, inline='I4', group='Intraday Moving Averages')
+iIntraMA4Type = input.string(title='', options=['SMA', 'EMA', 'RMA', 'VWMA', 'WMA'], defval='SMA', inline='I4', group='Intraday Moving Averages')
+iIntraMA4Source = input.source(title='', defval=close, inline='I4', group='Intraday Moving Averages')
+iIntraMA4Color = input.color(title='', defval=color.gray, inline='I4', group='Intraday Moving Averages')
+
+iIntraMA5Visible = input.bool(title='', defval=false, inline='I5', group='Intraday Moving Averages')
+iIntraMA5Length = input.int(title='', minval=1, maxval=5000, defval=60, inline='I5', group='Intraday Moving Averages')
+iIntraMA5Type = input.string(title='', options=['SMA', 'EMA', 'RMA', 'VWMA', 'WMA'], defval='SMA', inline='I5', group='Intraday Moving Averages')
+iIntraMA5Source = input.source(title='', defval=close, inline='I5', group='Intraday Moving Averages')
+iIntraMA5Color = input.color(title='', defval=color.purple, inline='I5', group='Intraday Moving Averages')
+
+iIntraCloud = input.bool(title='Show Moving Average Cloud', defval=false, inline='I6', tooltip='Fill area between the first two defined ' + 
+     'moving averages with color. At a glance, you can see if the slower moving average is above or below the faster moving average.')
+iIntraCloudColorUp = input.color(title='   Up', defval=color.new(color.green, transp=90), inline='I6')
+iIntraCloudColorDown = input.color(title='Down', defval=color.new(color.red, transp=90), inline='I6')
+
+//---------------------------------------------------
+// Daily 
+//---------------------------------------------------
+iDailyMA1Visible = input.bool(title='', defval=true, inline='I7', group='Daily Moving Averages')
+iDailyMA1Length = input.int(title='', minval=1, maxval=5000, defval=10, inline='I7', group='Daily Moving Averages')
+iDailyMA1Type = input.string(title='', options=['SMA', 'EMA', 'RMA', 'VWMA', 'WMA'], defval='SMA', inline='I7', group='Daily Moving Averages')
+iDailyMA1Source = input.source(title='', defval=close, inline='I7', group='Daily Moving Averages')
+iDailyMA1Color = input.color(title='', defval=color.aqua, inline='I7', group='Daily Moving Averages')
+
+iDailyMA2Visible = input.bool(title='', defval=true, inline='I8', group='Daily Moving Averages')
+iDailyMA2Length = input.int(title='', minval=1, maxval=5000, defval=21, inline='I8', group='Daily Moving Averages')
+iDailyMA2Type = input.string(title='', options=['SMA', 'EMA', 'RMA', 'VWMA', 'WMA'], defval='EMA', inline='I8', group='Daily Moving Averages')
+iDailyMA2Source = input.source(title='', defval=close, inline='I8', group='Daily Moving Averages')
+iDailyMA2Color = input.color(title='', defval=#4F8B45, inline='I8', group='Daily Moving Averages')
+
+iDailyMA3Visible = input.bool(title='', defval=true, inline='I9', group='Daily Moving Averages')
+iDailyMA3Length = input.int(title='', minval=1, maxval=5000, defval=50, inline='I9', group='Daily Moving Averages')
+iDailyMA3Type = input.string(title='', options=['SMA', 'EMA', 'RMA', 'VWMA', 'WMA'], defval='SMA', inline='I9', group='Daily Moving Averages')
+iDailyMA3Source = input.source(title='', defval=close, inline='I9', group='Daily Moving Averages')
+iDailyMA3Color = input.color(title='', defval=#C23E38, inline='I9', group='Daily Moving Averages')
+
+iDailyMA4Visible = input.bool(title='', defval=true, inline='I10', group='Daily Moving Averages')
+iDailyMA4Length = input.int(title='', minval=1, maxval=5000, defval=200, inline='I10', group='Daily Moving Averages')
+iDailyMA4Type = input.string(title='', options=['SMA', 'EMA', 'RMA', 'VWMA', 'WMA'], defval='SMA', inline='I10', group='Daily Moving Averages')
+iDailyMA4Source = input.source(title='', defval=close, inline='I10', group='Daily Moving Averages')
+iDailyMA4Color = input.color(title='', defval=color.gray, inline='I10', group='Daily Moving Averages')
+
+iDailyMA5Visible = input.bool(title='', defval=false, inline='I11', group='Daily Moving Averages')
+iDailyMA5Length = input.int(title='', minval=1, maxval=500, defval=300, inline='I11', group='Daily Moving Averages')
+iDailyMA5Type = input.string(title='', options=['SMA', 'EMA', 'RMA', 'VWMA', 'WMA'], defval='SMA', inline='I11', group='Daily Moving Averages')
+iDailyMA5Source = input.source(title='', defval=close, inline='I11', group='Daily Moving Averages')
+iDailyMA5Color = input.color(title='', defval=color.purple, inline='I11', group='Daily Moving Averages')
+
+iDailyCloud = input.bool(title='Show Moving Average Cloud', defval=false, inline='I12', tooltip='Fill area between the first two defined ' +
+     'moving averages with color. At a glance, you can see if the slower moving average is above or below the faster moving average.')
+iDailyCloudColorUp = input.color(title='   Up', defval=color.new(color.green, transp=90), inline='I12')
+iDailyCloudColorDown = input.color(title='Down', defval=color.new(color.red, transp=90), inline='I12')
+
+iWeeklyOnDaily = input.bool(title='Show Weekly on Daily', defval=false, inline='I13')
+iWeeklyOnDailyColor = input.color(title='', defval=color.olive, inline='I13')
+
+
+//---------------------------------------------------
+// Weekly 
+//---------------------------------------------------
+iWeeklyMA1Visible = input.bool(title='', defval=true, inline='I14', group='Weekly Moving Averages')
+iWeeklyMA1Length = input.int(title='', minval=1, maxval=5000, defval=10, inline='I14', group='Weekly Moving Averages')
+iWeeklyMA1Type = input.string(title='', options=['SMA', 'EMA', 'RMA', 'VWMA', 'WMA'], defval='SMA', inline='I14', group='Weekly Moving Averages')
+iWeeklyMA1Source = input.source(title='', defval=close, inline='I14', group='Weekly Moving Averages')
+iWeeklyMA1Color = input.color(title='', defval=#C23E38, inline='I14', group='Weekly Moving Averages')
+
+iWeeklyMA2Visible = input.bool(title='', defval=true, inline='I15', group='Weekly Moving Averages')
+iWeeklyMA2Length = input.int(title='', minval=1, maxval=5000, defval=20, inline='I15', group='Weekly Moving Averages')
+iWeeklyMA2Type = input.string(title='', options=['SMA', 'EMA', 'RMA', 'VWMA', 'WMA'], defval='SMA', inline='I15', group='Weekly Moving Averages')
+iWeeklyMA2Source = input.source(title='', defval=close, inline='I15', group='Weekly Moving Averages')
+iWeeklyMA2Color = input.color(title='', defval=#92959D, inline='I15', group='Weekly Moving Averages')
+
+iWeeklyMA3Visible = input.bool(title='', defval=false, inline='I16', group='Weekly Moving Averages')
+iWeeklyMA3Length = input.int(title='', minval=1, maxval=5000, defval=40, inline='I16', group='Weekly Moving Averages')
+iWeeklyMA3Type = input.string(title='', options=['SMA', 'EMA', 'RMA', 'VWMA', 'WMA'], defval='SMA', inline='I16', group='Weekly Moving Averages')
+iWeeklyMA3Source = input.source(title='', defval=close, inline='I16', group='Weekly Moving Averages')
+iWeeklyMA3Color = input.color(title='', defval=#4F8B45, inline='I16', group='Weekly Moving Averages')
+
+iWeeklyMA4Visible = input.bool(title='', defval=false, inline='I17', group='Weekly Moving Averages')
+iWeeklyMA4Length = input.int(title='', minval=1, maxval=5000, defval=100, inline='I17', group='Weekly Moving Averages')
+iWeeklyMA4Type = input.string(title='', options=['SMA', 'EMA', 'RMA', 'VWMA', 'WMA'], defval='SMA', inline='I17', group='Weekly Moving Averages')
+iWeeklyMA4Source = input.source(title='', defval=close, inline='I17', group='Weekly Moving Averages')
+iWeeklyMA4Color = input.color(title='', defval=color.aqua, inline='I17', group='Weekly Moving Averages')
+
+iWeeklyCloud = input.bool(title='Show Moving Average Cloud', defval=false, inline='I18', tooltip='Fill area between the first two defined ' +
+     'moving averages with color. At a glance, you can see if the slower moving average is above or below the faster moving average.')
+iWeeklyCloudColorUp = input.color(title='   Up', defval=color.new(color.green, transp=90), inline='I18')
+iWeeklyCloudColorDown = input.color(title='Down', defval=color.new(color.red, transp=90), inline='I18')
+
+
+//---------------------------------------------------
+// Monthly  
+//---------------------------------------------------
+iMonthlyMA1Visible = input.bool(title='', defval=false, inline='I19', group='Monthly Moving Averages')
+iMonthlyMA1Length = input.int(title='', minval=1, maxval=5000, defval=6, inline='I19', group='Monthly Moving Averages')
+iMonthlyMA1Type = input.string(title='', options=['SMA', 'EMA', 'RMA', 'VWMA', 'WMA'], defval='SMA', inline='I19', group='Monthly Moving Averages')
+iMonthlyMA1Source = input.source(title='', defval=close, inline='I19', group='Monthly Moving Averages')
+iMonthlyMA1Color = input.color(title='', defval=#C23E38, inline='I19', group='Monthly Moving Averages')
+
+iMonthlyMA2Visible = input.bool(title='', defval=true, inline='I20', group='Monthly Moving Averages')
+iMonthlyMA2Length = input.int(title='', minval=1, maxval=5000, defval=10, inline='I20', group='Monthly Moving Averages')
+iMonthlyMA2Type = input.string(title='', options=['SMA', 'EMA', 'RMA', 'VWMA', 'WMA'], defval='SMA', inline='I20', group='Monthly Moving Averages')
+iMonthlyMA2Source = input.source(title='', defval=close, inline='I20', group='Monthly Moving Averages')
+iMonthlyMA2Color = input.color(title='', defval=#92959D, inline='I20', group='Monthly Moving Averages')
+
+iMonthlyMA3Visible = input.bool(title='', defval=false, inline='I21', group='Monthly Moving Averages')
+iMonthlyMA3Length = input.int(title='', minval=1, maxval=5000, defval=24, inline='I21', group='Monthly Moving Averages')
+iMonthlyMA3Type = input.string(title='', options=['SMA', 'EMA', 'RMA', 'VWMA', 'WMA'], defval='SMA', inline='I21', group='Monthly Moving Averages')
+iMonthlyMA3Source = input.source(title='', defval=close, inline='I21', group='Monthly Moving Averages')
+iMonthlyMA3Color = input.color(title='', defval=#4F8B45, inline='I21', group='Monthly Moving Averages')
+
+iMonthlyMA4Visible = input.bool(title='', defval=false, inline='I22', group='Monthly Moving Averages')
+iMonthlyMA4Length = input.int(title='', minval=1, maxval=5000, defval=40, inline='I22', group='Monthly Moving Averages')
+iMonthlyMA4Type = input.string(title='', options=['SMA', 'EMA', 'RMA', 'VWMA', 'WMA'], defval='SMA', inline='I22', group='Monthly Moving Averages')
+iMonthlyMA4Source = input.source(title='', defval=close, inline='I22', group='Monthly Moving Averages')
+iMonthlyMA4Color = input.color(title='', defval=color.aqua, inline='I22', group='Monthly Moving Averages')
+
+iMonthlyCloud = input.bool(title='Show Moving Average Cloud', defval=false, inline='I23', tooltip='Fill area between the first two defined ' + 
+     'moving averages with color. At a glance, you can see if the slower moving average is above or below the faster moving average.')
+iMonthlyCloudColorUp = input.color(title='   Up', defval=color.new(color.green, transp=90), inline='I23')
+iMonthlyCloudColorDown = input.color(title='Down', defval=color.new(color.red, transp=90), inline='I23')
+
+//***************************************************************************************
+// Plot moving averages
+//***************************************************************************************
+
+//---------------------------------------------------
+// Intraday 
+//---------------------------------------------------
+intraMA1 = 0.0
+intraMA2 = 0.0
+intraMA3 = 0.0
+intraMA4 = 0.0
+intraMA5 = 0.0
+if (timeframe.isintraday)
+    intraMA1 := iIntraMA1Type == 'SMA' ? ta.sma(iIntraMA1Source, iIntraMA1Length) : iIntraMA1Type == 'EMA' ? ta.ema(iIntraMA1Source, iIntraMA1Length) : iIntraMA1Type == 'RMA' ? ta.rma(iIntraMA1Source, iIntraMA1Length) : iIntraMA1Type == 'VWMA' ? ta.vwma(iIntraMA1Source, iIntraMA1Length) : ta.wma(iIntraMA1Source, iIntraMA1Length)
+    intraMA2 := iIntraMA2Type == 'SMA' ? ta.sma(iIntraMA2Source, iIntraMA2Length) : iIntraMA2Type == 'EMA' ? ta.ema(iIntraMA2Source, iIntraMA2Length) : iIntraMA2Type == 'RMA' ? ta.rma(iIntraMA2Source, iIntraMA2Length) : iIntraMA2Type == 'VWMA' ? ta.vwma(iIntraMA2Source, iIntraMA2Length) : ta.wma(iIntraMA2Source, iIntraMA2Length)
+    intraMA3 := iIntraMA3Type == 'SMA' ? ta.sma(iIntraMA3Source, iIntraMA3Length) : iIntraMA3Type == 'EMA' ? ta.ema(iIntraMA3Source, iIntraMA3Length) : iIntraMA3Type == 'RMA' ? ta.rma(iIntraMA3Source, iIntraMA3Length) : iIntraMA3Type == 'VWMA' ? ta.vwma(iIntraMA3Source, iIntraMA3Length) : ta.wma(iIntraMA3Source, iIntraMA3Length)
+    intraMA4 := iIntraMA4Type == 'SMA' ? ta.sma(iIntraMA4Source, iIntraMA4Length) : iIntraMA4Type == 'EMA' ? ta.ema(iIntraMA4Source, iIntraMA4Length) : iIntraMA4Type == 'RMA' ? ta.rma(iIntraMA4Source, iIntraMA4Length) : iIntraMA4Type == 'VWMA' ? ta.vwma(iIntraMA4Source, iIntraMA4Length) : ta.wma(iIntraMA4Source, iIntraMA4Length)
+    intraMA5 := iIntraMA5Type == 'SMA' ? ta.sma(iIntraMA5Source, iIntraMA5Length) : iIntraMA5Type == 'EMA' ? ta.ema(iIntraMA5Source, iIntraMA5Length) : iIntraMA5Type == 'RMA' ? ta.rma(iIntraMA5Source, iIntraMA5Length) : iIntraMA5Type == 'VWMA' ? ta.vwma(iIntraMA5Source, iIntraMA5Length) : ta.wma(iIntraMA5Source, iIntraMA5Length)    
+i1 = plot(iIntraMA1Visible and timeframe.isintraday ? intraMA1 : na, title='Intraday Moving Average #1', color=iIntraMA1Color, linewidth=iWidth)
+i2 = plot(iIntraMA2Visible and timeframe.isintraday ? intraMA2 : na, title='Intraday Moving Average #2', color=iIntraMA2Color, linewidth=iWidth)
+plot(iIntraMA3Visible and timeframe.isintraday ? intraMA3 : na, title='Intraday Moving Average #3', color=iIntraMA3Color, linewidth=iWidth)
+plot(iIntraMA4Visible and timeframe.isintraday ? intraMA4 : na, title='Intraday Moving Average #4', color=iIntraMA4Color, linewidth=iWidth)
+plot(iIntraMA5Visible and timeframe.isintraday ? intraMA5 : na, title='Intraday Moving Average #5', color=iIntraMA5Color, linewidth=iWidth)
+
+// Show moving average cloud
+fillColor = color.rgb(0, 0, 0, 100)  // Transparent
+if (iIntraCloud)
+    fillColor := intraMA1 < intraMA2 ? iIntraCloudColorDown : iIntraCloudColorUp
+fill(i1, i2, color=fillColor)
+
+
+//---------------------------------------------------
+// Daily 
+//---------------------------------------------------
+dailyMA1 = 0.0
+dailyMA2 = 0.0
+dailyMA3 = 0.0
+dailyMA4 = 0.0
+dailyMA5 = 0.0
+if (timeframe.isdaily)
+    dailyMA1 := iDailyMA1Type == 'SMA' ? ta.sma(iDailyMA1Source, iDailyMA1Length) : iDailyMA1Type == 'EMA' ? ta.ema(iDailyMA1Source, iDailyMA1Length) : iDailyMA1Type == 'RMA' ? ta.rma(iDailyMA1Source, iDailyMA1Length) : iDailyMA1Type == 'VWMA' ? ta.vwma(iDailyMA1Source, iDailyMA1Length) : ta.wma(iDailyMA1Source, iDailyMA1Length)
+    dailyMA2 := iDailyMA2Type == 'SMA' ? ta.sma(iDailyMA2Source, iDailyMA2Length) : iDailyMA2Type == 'EMA' ? ta.ema(iDailyMA2Source, iDailyMA2Length) : iDailyMA2Type == 'RMA' ? ta.rma(iDailyMA2Source, iDailyMA2Length) : iDailyMA2Type == 'VWMA' ? ta.vwma(iDailyMA2Source, iDailyMA2Length) : ta.wma(iDailyMA2Source, iDailyMA2Length)
+    dailyMA3 := iDailyMA3Type == 'SMA' ? ta.sma(iDailyMA3Source, iDailyMA3Length) : iDailyMA3Type == 'EMA' ? ta.ema(iDailyMA3Source, iDailyMA3Length) : iDailyMA3Type == 'RMA' ? ta.rma(iDailyMA3Source, iDailyMA3Length) : iDailyMA3Type == 'VWMA' ? ta.vwma(iDailyMA3Source, iDailyMA3Length) : ta.wma(iDailyMA3Source, iDailyMA3Length)
+    dailyMA4 := iDailyMA4Type == 'SMA' ? ta.sma(iDailyMA4Source, iDailyMA4Length) : iDailyMA4Type == 'EMA' ? ta.ema(iDailyMA4Source, iDailyMA4Length) : iDailyMA4Type == 'RMA' ? ta.rma(iDailyMA4Source, iDailyMA4Length) : iDailyMA4Type == 'VWMA' ? ta.vwma(iDailyMA4Source, iDailyMA4Length) : ta.wma(iDailyMA4Source, iDailyMA4Length)
+    dailyMA5 := iDailyMA5Type == 'SMA' ? ta.sma(iDailyMA5Source, iDailyMA5Length) : iDailyMA5Type == 'EMA' ? ta.ema(iDailyMA5Source, iDailyMA5Length) : iDailyMA5Type == 'RMA' ? ta.rma(iDailyMA5Source, iDailyMA5Length) : iDailyMA5Type == 'VWMA' ? ta.vwma(iDailyMA5Source, iDailyMA5Length) : ta.wma(iDailyMA5Source, iDailyMA5Length)
+
+d1 = plot(iDailyMA1Visible and timeframe.isdaily ? dailyMA1 : na, title='Daily Moving Average #1', color=iDailyMA1Color, linewidth=iWidth)
+d2 = plot(iDailyMA2Visible and timeframe.isdaily ? dailyMA2 : na, title='Daily Moving Average #2', color=iDailyMA2Color, linewidth=iWidth)
+plot(iDailyMA3Visible and timeframe.isdaily ? dailyMA3 : na, title='Daily Moving Average #3', color=iDailyMA3Color, linewidth=iWidth)
+plot(iDailyMA4Visible and timeframe.isdaily ? dailyMA4 : na, title='Daily Moving Average #4', color=iDailyMA4Color, linewidth=iWidth)
+plot(iDailyMA5Visible and timeframe.isdaily ? dailyMA5 : na, title='Daily Moving Average #5', color=iDailyMA5Color, linewidth=iWidth)
+
+// Show weekly on daily
+w = request.security(syminfo.tickerid, 'W', ta.sma(close, 10), lookahead = barmerge.lookahead_on)
+plot(iWeeklyOnDaily and timeframe.isdaily ? w : na, color=iWeeklyOnDailyColor, linewidth=1)
+
+// Show moving average cloud
+fillColor := color.rgb(0, 0, 0, 100)  // Transparent
+if (iDailyCloud)
+    fillColor := dailyMA1 < dailyMA2 ? iDailyCloudColorDown : iDailyCloudColorUp
+fill(d1, d2, color=fillColor)
+
+//---------------------------------------------------
+// Weekly
+//---------------------------------------------------
+weeklyMA1 = 0.0
+weeklyMA2 = 0.0
+weeklyMA3 = 0.0
+weeklyMA4 = 0.0
+if timeframe.isweekly
+    weeklyMA1 := iWeeklyMA1Type == 'SMA' ? ta.sma(iWeeklyMA1Source, iWeeklyMA1Length) : iWeeklyMA1Type == 'EMA' ? ta.ema(iWeeklyMA1Source, iWeeklyMA1Length) : iWeeklyMA1Type == 'RMA' ? ta.rma(iWeeklyMA1Source, iWeeklyMA1Length) : iWeeklyMA1Type == 'VWMA' ? ta.vwma(iWeeklyMA1Source, iWeeklyMA1Length) : ta.wma(iWeeklyMA1Source, iWeeklyMA1Length)
+    weeklyMA2 := iWeeklyMA2Type == 'SMA' ? ta.sma(iWeeklyMA2Source, iWeeklyMA2Length) : iWeeklyMA2Type == 'EMA' ? ta.ema(iWeeklyMA2Source, iWeeklyMA2Length) : iWeeklyMA2Type == 'RMA' ? ta.rma(iWeeklyMA2Source, iWeeklyMA2Length) : iWeeklyMA2Type == 'VWMA' ? ta.vwma(iWeeklyMA2Source, iWeeklyMA2Length) : ta.wma(iWeeklyMA2Source, iWeeklyMA2Length)
+    weeklyMA3 := iWeeklyMA3Type == 'SMA' ? ta.sma(iWeeklyMA3Source, iWeeklyMA3Length) : iWeeklyMA3Type == 'EMA' ? ta.ema(iWeeklyMA3Source, iWeeklyMA3Length) : iWeeklyMA3Type == 'RMA' ? ta.rma(iWeeklyMA3Source, iWeeklyMA3Length) : iWeeklyMA3Type == 'VWMA' ? ta.vwma(iWeeklyMA3Source, iWeeklyMA3Length) : ta.wma(iWeeklyMA3Source, iWeeklyMA3Length)
+    weeklyMA4 := iWeeklyMA4Type == 'SMA' ? ta.sma(iWeeklyMA4Source, iWeeklyMA4Length) : iWeeklyMA4Type == 'EMA' ? ta.ema(iWeeklyMA4Source, iWeeklyMA4Length) : iWeeklyMA4Type == 'RMA' ? ta.rma(iWeeklyMA4Source, iWeeklyMA4Length) : iWeeklyMA4Type == 'VWMA' ? ta.vwma(iWeeklyMA4Source, iWeeklyMA4Length) : ta.wma(iWeeklyMA4Source, iWeeklyMA4Length)
+    weeklyMA4
+
+w1 = plot(iWeeklyMA1Visible and timeframe.isweekly ? weeklyMA1 : na, title='Weekly Moving Average #1', color=iWeeklyMA1Color, linewidth=iWidth)
+w2 = plot(iWeeklyMA2Visible and timeframe.isweekly ? weeklyMA2 : na, title='Weekly Moving Average #2', color=iWeeklyMA2Color, linewidth=iWidth)
+plot(iWeeklyMA3Visible and timeframe.isweekly ? weeklyMA3 : na, title='Weekly Moving Average #3', color=iWeeklyMA3Color, linewidth=iWidth)
+plot(iWeeklyMA4Visible and timeframe.isweekly ? weeklyMA4 : na, title='Weekly Moving Average #4', color=iWeeklyMA4Color, linewidth=iWidth)
+
+// Show moving average cloud
+fillColor := color.rgb(0, 0, 0, 100)  // Transparent
+if (iWeeklyCloud)
+    fillColor := weeklyMA1 < weeklyMA2 ? iWeeklyCloudColorDown : iWeeklyCloudColorUp
+fill(w1, w2, color=fillColor)
+
+
+//---------------------------------------------------
+// Monthly 
+//---------------------------------------------------
+monthlyMA1 = 0.0
+monthlyMA2 = 0.0
+monthlyMA3 = 0.0
+monthlyMA4 = 0.0
+if (timeframe.ismonthly)
+    monthlyMA1 := iMonthlyMA1Type == 'SMA' ? ta.sma(iMonthlyMA1Source, iMonthlyMA1Length) : iMonthlyMA1Type == 'EMA' ? ta.ema(iMonthlyMA1Source, iMonthlyMA1Length) : iMonthlyMA1Type == 'RMA' ? ta.rma(iMonthlyMA1Source, iMonthlyMA1Length) : iMonthlyMA1Type == 'VWMA' ? ta.vwma(iMonthlyMA1Source, iMonthlyMA1Length) : ta.wma(iMonthlyMA1Source, iMonthlyMA1Length)
+    monthlyMA2 := iMonthlyMA2Type == 'SMA' ? ta.sma(iMonthlyMA2Source, iMonthlyMA2Length) : iMonthlyMA2Type == 'EMA' ? ta.ema(iMonthlyMA2Source, iMonthlyMA2Length) : iMonthlyMA2Type == 'RMA' ? ta.rma(iMonthlyMA2Source, iMonthlyMA2Length) : iMonthlyMA2Type == 'VWMA' ? ta.vwma(iMonthlyMA2Source, iMonthlyMA2Length) : ta.wma(iMonthlyMA2Source, iMonthlyMA2Length)
+    monthlyMA3 := iMonthlyMA3Type == 'SMA' ? ta.sma(iMonthlyMA3Source, iMonthlyMA3Length) : iMonthlyMA3Type == 'EMA' ? ta.ema(iMonthlyMA3Source, iMonthlyMA3Length) : iMonthlyMA3Type == 'RMA' ? ta.rma(iMonthlyMA3Source, iMonthlyMA3Length) : iMonthlyMA3Type == 'VWMA' ? ta.vwma(iMonthlyMA3Source, iMonthlyMA3Length) : ta.wma(iMonthlyMA3Source, iMonthlyMA3Length)
+    monthlyMA4 := iMonthlyMA4Type == 'SMA' ? ta.sma(iMonthlyMA4Source, iMonthlyMA4Length) : iMonthlyMA4Type == 'EMA' ? ta.ema(iMonthlyMA4Source, iMonthlyMA4Length) : iMonthlyMA4Type == 'RMA' ? ta.rma(iMonthlyMA4Source, iMonthlyMA4Length) : iMonthlyMA4Type == 'VWMA' ? ta.vwma(iMonthlyMA4Source, iMonthlyMA4Length) : ta.wma(iMonthlyMA4Source, iMonthlyMA4Length)
+    monthlyMA4
+
+m1 = plot(iMonthlyMA1Visible and timeframe.ismonthly ? monthlyMA1 : na, title='Monthly Moving Average #1', color=iMonthlyMA1Color, linewidth=iWidth)
+m2 = plot(iMonthlyMA2Visible and timeframe.ismonthly ? monthlyMA2 : na, title='Monthly Moving Average #2', color=iMonthlyMA2Color, linewidth=iWidth)
+plot(iMonthlyMA3Visible and timeframe.ismonthly ? monthlyMA3 : na, title='Monthly Moving Average #3', color=iMonthlyMA3Color, linewidth=iWidth)
+plot(iMonthlyMA4Visible and timeframe.ismonthly ? monthlyMA4 : na, title='Monthly Moving Average #4', color=iMonthlyMA4Color, linewidth=iWidth)
+
+// Show moving average cloud
+fillColor := color.rgb(0, 0, 0, 100)  // Transparent
+if (iMonthlyCloud)
+    fillColor := monthlyMA1 < monthlyMA2 ? iMonthlyCloudColorDown : iMonthlyCloudColorUp
+fill(m1, m2, color=fillColor)
+
+
+
+
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © ChartPrime
+
+//@version=5
+//indicator("Fibo Levels with Volume Profile [ChartPrime]",shorttitle = "FIVP [ChartPrime]",overlay = true,max_bars_back = 5000,max_boxes_count = 500)
+
+
+color Offwhite                                  = color.rgb(255, 255, 255, 71)
+color _offwhite                                 = color.rgb(255, 255, 255, 50)
+color  Red1                                     = color.rgb(255, 82, 82, 85)
+color  Red2                                     = color.rgb(243, 6, 6, 60)
+color green                                     = color.rgb(73, 241, 241, 85)
+color green2                                    = color.rgb(73, 241, 241, 60)
+color Black                                     = color.rgb(7, 7, 7)
+color Yellow                                    = color.rgb(254, 229, 4)
+string visual                                   =  "➞ Visuals Settings🔸" 
+string core                                     =  "➞ Main Core Settings 🔸"
+
+
+string TIME                                     = input.timeframe("D",title = "Fibo Timeframe",
+     group = core,
+     options=["120","240","480","720",'D', 'W', 'M'],
+     tooltip = "Choose a Higher Timeframe than Chart Timeframe")
+
+
+string Voldata                                  = input.string("All",title = "Volume Type",
+     group = core,
+     options=["Bear","Bull","All"],
+     tooltip = "Choose Volume Type to Show in Boxes") 
+
+
+int levs                                        = input.int(12,"Volume Levels",tooltip = "Number of the Volume levels to check", group = core)
+bool ShowVolume                                 = input.bool(true,"Show Volume ❓  ",inline = "01",group = visual)
+color Bull                                      = input.color(color.new(#42f07f, 35),"",inline = "01",group = visual)
+color Bear                                      = input.color(color.new(#f37451, 70),"",inline = "01",group = visual)
+bool Showlevels                                 = input.bool(true,"Show Levels ❓    ",inline = "02",group = visual)
+color Bull1                                     = input.color(green,"",inline = "02",group = visual)
+color Bear1                                     = input.color(Red1,"",inline = "02",group = visual)
+
+bool ShowTarget                                 = input.bool(true,"Show Target ❓    ",inline = "03",group = visual)
+color Bull2                                     = input.color(color.lime,"",inline = "03",group = visual)
+color Bear2                                     = input.color(color.rgb(230, 0, 0),"",inline = "03",group = visual)
+bool ShowPOC                                    = input.bool(true,"Show POC ❓    ",inline = "04",group = visual)
+int sync                                        = bar_index
+float scr                                       = close
+string TF                                       = timeframe.isdwm ? "M" : "W"
+int atrLen                                      = 30
+float mult                                      = 0.3
+float per                                       = 10.0
+float perc                                      = close * (0.3/100)
+float srdatr                                    = ta.atr (atrLen) * mult
+float band                                      = math.min (srdatr, perc) [20] /2
+var float [] Fibo                                   = array.new_float(6,0.0)
+var line [] Lines                               = array.new_line()   
+var label [] Labels                              = array.new_label()  
+var box [] FiboBOX                              = array.new_box(6)
+float FH                                        = request.security(syminfo.tickerid, TIME, high[1]) + band
+float FL                                        = request.security(syminfo.tickerid, TIME, low[1]) - band
+float FC                                        = request.security(syminfo.tickerid, TIME, close[1]) + band
+float [] TotalVolume                            = array.new_float()
+float [] Greenvolume                            = array.new_float()
+float [] redvolume                              = array.new_float()
+var int newWeekBarIndex                         = na
+var int newWeekTIME                             = na
+weekChange                                      = timeframe.change(TF)
+
+if weekChange
+    newWeekBarIndex := bar_index
+    newWeekTIME := time
+
+
+TF2 = timeframe.multiplier < 60 ? "1D" : "3D"
+
+EXTIME = timeframe.in_seconds(TF2) * 1000
+anchorTime = time + EXTIME
+anchorBarIndex = (time - anchorTime) / (1000 * timeframe.in_seconds(timeframe.period))
+anchorBarsBack = bar_index - anchorBarIndex 
+
+// plot(anchorBarsBack)
+// plot(bar_index)
+
+BAR1 = math.floor(sync - newWeekBarIndex)
+Volume(GV,RV,TV,BC)=>
+    GR = GV / TV 
+    RR = RV / TV
+    [GR , RR]
+
+PP = (FH + FL + FC) / 3
+if BAR1 > 5000
+    BAR1:=3500
+
+array.set(Fibo,0,PP + 0.382 * (FH - FL))
+array.set(Fibo,1,PP - 0.382 * (FH - FL))
+array.set(Fibo,2,PP + 0.618 * (FH - FL))
+array.set(Fibo,3,PP - 0.618 * (FH - FL))
+array.set(Fibo,4,PP + (FH - FL))
+array.set(Fibo,5,PP - (FH - FL))
+
+
+// int levs                    = array.size(Fibo) * 2
+float FT                    = array.get(Fibo,4)
+float FB                    = array.get(Fibo,5)
+float [] VPlevels           = array.new_float(levs+1)
+var box [] VPboxes          = array.new_box(levs+3)
+
+
+if array.size(Fibo) > 6
+    for i = 0 to 5
+        array.shift(Fibo) 
+
+
+step = ( FT-FB ) / levs
+for i=0 to levs by 1
+    array.set(VPlevels,i, FB + step * i)
+
+
+if barstate.islast
+    int [] Points       = array.new_int(levs,0)
+    float [] Volumes    = array.new_float(levs,0.0)
+    float [] SCR        = array.new_float()
+    float [] BUllV        = array.new_float(levs,0.0)
+    float [] BEARV        = array.new_float(levs,0.0)
+     
+    for i = 0 to BAR1
+        array.push(SCR,close[i])
+    if Showlevels
+        for i = 0 to array.size(Fibo) - 1
+            C = i == 0 or i == 2 or i == 4  
+            array.push(FiboBOX,box.new(newWeekTIME,
+              array.get(Fibo,i) + (band/2),
+              time + EXTIME,
+              array.get(Fibo,i) - (band/2),
+              bgcolor = C ? Bear1 : Bull1,
+              border_color =C ? color.new(Bear1,60) : color.new(Bull1,60),
+              border_width = 1,
+              xloc = xloc.bar_time))
+
+    for i=0 to array.size(SCR) -1
+        for x=0 to array.size(VPlevels) - 2  by 1
+            if array.get(SCR,i)>array.get(VPlevels,x) 
+                 and
+                 array.get(SCR,i)<array.get(VPlevels,x+1)
+                array.set(Points,x,array.get(Points,x)+1)
+                array.set(Volumes,x,array.get(Volumes,x)+volume[x])
+                if array.get(SCR,i) > open[i]
+                    array.set(BUllV,x,array.get(BUllV,x)+volume[x])
+                if array.get(SCR,i) < open[i]
+                    array.set(BEARV,x,array.get(BEARV,x)+volume[x])     
+                break
+        if array.get(SCR,i) > open[i]
+            array.push(Greenvolume,volume[i])
+        if array.get(SCR,i) < open[i]
+            array.push(redvolume,volume[i])
+        array.push(TotalVolume,volume[i])
+    [GR,RR] = Volume(array.sum(Greenvolume),
+         array.sum(redvolume),
+         array.sum(TotalVolume),
+         array.size(SCR) -1) 
+
+        
+    // label.new(bar_index,high,str.tostring(SCR.size()))
+    if ShowVolume 
+                
+        for i = 0 to array.size(Points) -1
+            str = Voldata == "All" ? str.tostring(array.get(Volumes,i),format.volume)
+                 : Voldata == "Bear" ? str.tostring(array.get(BEARV,i),format.volume):
+                 str.tostring(array.get(BUllV,i),format.volume)
+            box.delete(array.get(VPboxes,i))
+            array.set(VPboxes,i,
+                 box.new(anchorBarsBack - array.get(Points,i),
+                 array.get(VPlevels,i+1) + (band/2),
+                 anchorBarsBack,
+                 array.get(VPlevels,i) + (band/2),
+             border_color = color.from_gradient(array.get(Points,i),0,
+             array.max(Points),
+             Bear,
+             Bull),
+             bgcolor=color.from_gradient(array.get(Points,i),0,
+             array.max(Points),
+             Bear,
+             Bull),
+             text=str,
+             text_color=color.white
+             ))
+
+
+    if ShowPOC
+        //get the max volume 
+        // array.indexof(Volumes)
+        var box POC = na , box.delete(POC)
+        MaxVID = Volumes.indexof(Volumes.max())
+
+        POC:= box.new(newWeekTIME,VPlevels.get(MaxVID)+ (band/2),anchorTime,VPlevels.get(MaxVID+1)+ (band/2),
+              #e0f2e93a,border_style=line.style_solid,bgcolor=color.new(#586161, 75),
+              text="POC",text_color=chart.fg_color,text_halign  = text.align_center, text_valign = text.align_center,xloc=xloc.bar_time)
+
+
+
+    MID = (FB +FT ) / 2 
+    if (scr < FT) and (scr > FB) and ShowTarget
+        max_bars_back(scr,2000)
+        if GR > RR
+            if (scr > MID)
+                array.push(Lines,
+                     line.new(sync + 3,
+                      hl2[1],sync + 10,
+                      array.get(Fibo,2),
+                      color= Bull2,
+                      style = line.style_arrow_right,
+                      width = 1))
+                array.push(Labels,
+                     label.new(sync + 10,
+                     array.get(Fibo,2),
+                     "Possible Target ",
+                     style=label.style_label_lower_left,
+                     color=color.new(Bull2, 70),
+                     textcolor = color.white,
+                     size=size.small))
+
+            else if (scr < MID)
+                array.push(Lines,
+                     line.new(sync + 3,
+                     hl2[1],sync + 10,
+                     array.get(Fibo,0),
+                     color= Bull2,
+                     style = line.style_arrow_right,
+                     width = 1))
+                array.push(Labels,
+                     label.new(sync + 10,
+                     array.get(Fibo,0),
+                     "Possible Target ",
+                     style=label.style_label_lower_left,
+                     color=color.new(Bull2, 70),
+                     textcolor = color.white,
+                     size=size.small))    
+        else 
+            if scr > MID 
+                array.push(Lines,
+                     line.new(sync + 3,
+                     hl2[1],sync + 10,
+                     array.get(Fibo,1),
+                     color= Bear2,
+                     style = line.style_arrow_right,
+                     width = 1))
+                array.push(Labels,
+                     label.new(sync + 10,
+                     array.get(Fibo,1),
+                     "Possible Target ",
+                     style=label.style_label_lower_left,
+                     color=color.new(Bear2, 70),
+                     textcolor = color.white,
+                     size=size.small))
+
+            else if scr < MID
+                array.push(Lines,
+                     line.new(sync + 3,
+                     hl2[1],sync + 10,
+                     array.get(Fibo,3),
+                     color= Bear2,
+                     style = line.style_arrow_right,
+                     width = 1))
+                array.push(Labels,
+                     label.new(sync + 10,
+                     array.get(Fibo,3),
+                     "Possible Target ",
+                     style=label.style_label_lower_left,
+                     color=color.new(Bear2, 70),
+                     textcolor = color.white,
+                     size=size.small))
+
+
+
+    if array.size(Lines) > 1
+        line.delete(array.shift(Lines))
+
+    if array.size(Labels) > 1
+        label.delete(array.shift(Labels))
+
+    if array.size(FiboBOX) > 6
+        for i = 0 to 5
+            box.delete(array.shift(FiboBOX))
+
+
+
